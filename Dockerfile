@@ -15,6 +15,11 @@ RUN apt-get update && \
         sssd \
         sssd-tools \
         openssh-server \
+    libnss-sss \
+    libpam-pwquality \
+    libpam-sss \
+    libsss-sudo \
+    ldap-utils \
         numactl \
         vim \
         net-tools \
@@ -53,14 +58,20 @@ RUN wget -c https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.s
     echo "export PATH=/root/miniconda2/bin:$PATH" >> /root/.bashrc
 WORKDIR /root/miniconda2/caffe
 
-RUN mkdir /var/run/sshd && \
-    echo 'root:intelcaffe@123' | chpasswd
-RUN sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/;s/Port 22/Port 10010/' /etc/ssh/sshd_config
-
+#RUN mkdir /var/run/sshd && \
+#    echo 'root:intelcaffe@123' | chpasswd
+#RUN sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/;s/Port 22/Port 10010/' /etc/ssh/sshd_config
 # SSH login fix. Otherwise user is kicked off after login
-RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
+#RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
 
 ENV NOTVISIBLE "in users profile"
 RUN echo "export VISIBLE=now" >> /etc/profile
 
-EXPOSE 22
+
+COPY eecsCA_v3.crt /etc/ssl/ 
+COPY sssd.conf /etc/sssd/ 
+COPY common* /etc/pam.d/ 
+RUN chmod 0600 /etc/sssd/sssd.conf /etc/pam.d/common* 
+RUN if [ ! -d /var/run/sshd ]; then mkdir /var/run/sshd; chmod 0755 /var/run/sshd; fi
+COPY init.sh startsvc.sh startshell.sh notebook.sh startDef.sh /bin/ 
+
