@@ -73,5 +73,5 @@ COPY sssd.conf /etc/sssd/
 COPY common* /etc/pam.d/ 
 RUN chmod 0600 /etc/sssd/sssd.conf /etc/pam.d/common* 
 RUN if [ ! -d /var/run/sshd ]; then mkdir /var/run/sshd; chmod 0755 /var/run/sshd; fi
-COPY init.sh startsvc.sh startshell.sh notebook.sh startDef.sh /bin/ 
+COPY startsvc.sh startshell.sh notebook.sh startDef.sh /bin/ 
 
